@@ -8,4 +8,6 @@ LangChain Component: ChatOllama или Ollama из @langchain/community/llms/oll
 
 Кэширование/Сессионная Память: Redis.
 
+#2
+
 База Данных: MongoDB.
