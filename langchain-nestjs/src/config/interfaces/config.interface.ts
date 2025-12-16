@@ -12,6 +12,14 @@ export interface OllamaConfig {
   };
 }
 
+export interface RedisConfig {
+  url: string;
+}
+
+export interface mongoConfig {
+  uri: string;
+}
+
 export interface AppConfig {
   env: string;
   port: number;
@@ -19,4 +27,6 @@ export interface AppConfig {
   ip: string;
   logging: LoggingConfig;
   ollama: OllamaConfig;
+  redis: RedisConfig;
+  mongo: mongoConfig;
 }

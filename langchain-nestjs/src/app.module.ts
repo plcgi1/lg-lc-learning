@@ -4,6 +4,10 @@ import { LoggerModule } from "nestjs-pino";
 import { LlmsModule } from "./llm/llm.module";
 import { ChatModule } from "./chat/chat.module";
 import { appConfig } from "./config/configuration";
+import { MongoModule } from "./mongo/mongo.module"; // Импортируем наш новый модуль
+import { RedisModule } from "./redis/redis.module"; // Предположим
+
+const globalConfig = appConfig();
 
 @Module({
   imports: [
@@ -12,9 +16,13 @@ import { appConfig } from "./config/configuration";
       load: [appConfig],
       envFilePath: [".env"],
     }),
-    LoggerModule.forRoot({}),
+    LoggerModule.forRoot({
+      pinoHttp: globalConfig.logging,
+    }),
     LlmsModule,
     ChatModule,
+    MongoModule,
+    RedisModule,
   ],
   // TODO надо ли
   // providers: [

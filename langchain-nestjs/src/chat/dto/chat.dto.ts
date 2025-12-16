@@ -10,5 +10,10 @@ export class ChatDto {
   @ApiProperty({
     description: "Пользователь",
   })
-  userId: number;
+  userId: string;
+
+  @ApiProperty({
+    description: "ID сессии",
+  })
+  sessionId: string;
 }

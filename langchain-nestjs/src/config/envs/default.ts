@@ -34,4 +34,12 @@ export const defaultConfig: AppConfig = {
       temperature: 0.7,
     },
   },
+
+  redis: {
+    url: process.env.REDIS_HOST,
+  },
+
+  mongo: {
+    uri: process.env.MONGO_URI,
+  },
 };

@@ -3,10 +3,10 @@ import {
   Logger,
   InternalServerErrorException,
 } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
 import { ChatOllama } from "@langchain/ollama";
 import { BaseMessage, HumanMessage } from "@langchain/core/messages";
 import { PromptTemplate } from "@langchain/core/prompts";
+import { ConfigService } from "@nestjs/config";
 import { AppConfig } from "../config/interfaces/config.interface";
 
 @Injectable()
@@ -34,6 +34,9 @@ export class LLMService {
     );
   }
 
+  getChatModel() {
+    return this.chatModel;
+  }
   /**
    * Задержка с экспоненциальным ростом
    * @param attempt - текущая попытка
