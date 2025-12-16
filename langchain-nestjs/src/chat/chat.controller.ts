@@ -51,12 +51,6 @@ export class ChatController {
   @UsePipes(new ValidationPipe({ transform: true })) // Применяем Pipe
   async getHistory(@Param() params: SessionIdDto) {
     const { sessionId } = params;
-    if (!sessionId) {
-      throw new HttpException(
-        "Session ID is required.",
-        HttpStatus.BAD_REQUEST,
-      );
-    }
 
     const history = await this.historyService.getHistoryBySessionId(sessionId);
 
