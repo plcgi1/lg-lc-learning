@@ -5,7 +5,8 @@ import { LlmsModule } from "./llm/llm.module";
 import { ChatModule } from "./chat/chat.module";
 import { appConfig } from "./config/configuration";
 import { MongoModule } from "./mongo/mongo.module"; // Импортируем наш новый модуль
-import { RedisModule } from "./redis/redis.module"; // Предположим
+import { RedisModule } from "./redis/redis.module";
+import { ToolsModule } from "./tools/tools.module";
 
 const globalConfig = appConfig();
 
@@ -23,6 +24,7 @@ const globalConfig = appConfig();
     ChatModule,
     MongoModule,
     RedisModule,
+    ToolsModule,
   ],
   // TODO надо ли
   // providers: [

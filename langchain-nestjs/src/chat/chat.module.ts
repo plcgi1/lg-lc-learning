@@ -7,9 +7,10 @@ import { RedisService } from "../redis/redis.service";
 import { ConversationHistoryService } from "../mongo/conversation-history.service";
 import { RedisModule } from "../redis/redis.module";
 import { MongoModule } from "../mongo/mongo.module";
+import { AgentModule } from "../agent/agent.module";
 
 @Module({
-  imports: [LlmsModule, RedisModule, MongoModule],
+  imports: [LlmsModule, RedisModule, MongoModule, AgentModule],
   controllers: [ChatController],
   providers: [
     ChatService,
