@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, InternalServerErrorException } from "@nestjs/common";
 import { BaseChatModel } from "@langchain/core/language_models/chat_models";
 import { AgentExecutor, ZeroShotAgent } from "@langchain/classic/agents";
 import { LLMChain } from "@langchain/classic/chains";
@@ -114,18 +114,55 @@ Question: {input}
       maxIterations: 8,
     });
 
-    try {
-      this.logger.info(`Running AgentExecutor for session ${sessionId}.`);
+    const result = await this.invokeWithRetry(
+        executor,
+        message,
+        sessionId
+    )
+      return result
+  }
 
-      const result = await executor.invoke({ input: message });
+  /**
+   * Задержка с экспоненциальным ростом
+   * @param attempt - текущая попытка
+   */
+  private async delay(attempt: number): Promise<void> {
+    const delayMs = Math.pow(2, attempt) * 100 + Math.random() * 100; // 2^n * 100ms + джиттер
+    this.logger.warn(
+      `Attempt ${attempt + 1} failed. Retrying in ${delayMs.toFixed(0)}ms...`,
+    );
+    return new Promise((resolve) => setTimeout(resolve, delayMs));
+  }
 
-      return result.output;
-    } catch (error) {
-      this.logger.error(
-        `AgentExecutor failed for session ${sessionId}.`,
-        error instanceof Error ? error.stack : error,
-      );
-      throw error;
+  async invokeWithRetry(
+    executor: AgentExecutor,
+    message: string,
+    sessionId: string,
+    maxRetries: number = 3,
+  ): Promise<string> {
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      try {
+        this.logger.info(`Running AgentExecutor for session ${sessionId}.`);
+
+        const result = await executor.invoke({ input: message });
+
+        return result.output;
+      } catch (error) {
+        this.logger.error(
+            { error },
+          `AgentService Call Failed (Attempt ${attempt + 1}):`,
+        );
+
+        // В продакшене здесь проверяют коды ошибок (429, 500)
+        // @eslint-ignore
+        if (attempt === maxRetries - 1) {
+          throw new InternalServerErrorException(
+            "AgentService is currently unavailable or busy after multiple retries.",
+          );
+        }
+
+        await this.delay(attempt);
+      }
     }
   }
 }
