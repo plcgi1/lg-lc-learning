@@ -1,35 +1,37 @@
-import {
-  Injectable,
-  Logger,
-  InternalServerErrorException,
-} from "@nestjs/common";
+import { Injectable, InternalServerErrorException } from "@nestjs/common";
 import { ChatOllama } from "@langchain/ollama";
 import { BaseMessage, HumanMessage } from "@langchain/core/messages";
 import { PromptTemplate } from "@langchain/core/prompts";
 import { ConfigService } from "@nestjs/config";
 import { AppConfig } from "../config/interfaces/config.interface";
+import { InjectPinoLogger, PinoLogger } from "nestjs-pino";
 
 @Injectable()
 export class LLMService {
-  private readonly logger = new Logger(LLMService.name);
   private readonly chatModel: ChatOllama;
 
-  constructor(private configService: ConfigService) {
+  constructor(
+    private configService: ConfigService,
+    private redisService: RedisService,
+    @InjectPinoLogger(LLMService.name)
+    private readonly logger: PinoLogger,
+  ) {
     const appConfig = configService.get<AppConfig>("app");
 
-    // 1. Инициализация Ollama из конфигурации
     const {
       baseUrl,
       model,
       options: { temperature },
     } = appConfig.ollama;
+
     this.chatModel = new ChatOllama({
       baseUrl,
       model,
-      // Дополнительные настройки (температура, таймауты)
+      stop: ["Observation:", "Question:"],
       temperature,
+      cache: this.redisService.getCacheClient(),
     });
-    this.logger.log(
+    this.logger.info(
       `Initialized ChatOllama with model: ${model} at ${baseUrl}`,
     );
   }
@@ -72,7 +74,7 @@ export class LLMService {
         );
 
         // В продакшене здесь проверяют коды ошибок (429, 500)
-        /* eslintignore */
+        // @eslint-ignore
         if (attempt === maxRetries - 1) {
           throw new InternalServerErrorException(
             "LLM service is currently unavailable or busy after multiple retries.",

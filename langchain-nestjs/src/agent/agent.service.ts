@@ -1,4 +1,4 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { BaseChatModel } from "@langchain/core/language_models/chat_models";
 import { AgentExecutor, ZeroShotAgent } from "@langchain/classic/agents";
 import { LLMChain } from "@langchain/classic/chains";
@@ -8,26 +8,28 @@ import { LLMService } from "../llm/llm.service";
 import { CurrentTimeTool } from "../tools/current-time.tool";
 import { BufferMemory } from "@langchain/classic/memory";
 import { BaseChatMessageHistory } from "@langchain/core/chat_history";
-import { CalculatorTool } from '../tools/calculator.tool';
-import { GetCustomerOrderTool } from   '../tools/get-customer-order.tool'
+import { CalculatorTool } from "../tools/calculator.tool";
+import { GetCustomerOrderTool } from "../tools/get-customer-order.tool";
+import { InjectPinoLogger, PinoLogger } from "nestjs-pino";
 
 @Injectable()
 export class AgentService {
-  private readonly logger = new Logger(AgentService.name);
   private readonly llm: BaseChatModel;
   private readonly tools: StructuredTool<any>[];
 
   constructor(
     private readonly llmsService: LLMService,
+    @InjectPinoLogger(AgentService.name)
+    private readonly logger: PinoLogger,
   ) {
     this.llm = this.llmsService.getChatModel();
     // Собираем массив всех доступных инструментов
     this.tools = [
       new CurrentTimeTool(),
       new CalculatorTool(),
-        new GetCustomerOrderTool(),
+      new GetCustomerOrderTool(),
     ];
-    this.logger.log(
+    this.logger.info(
       `AgentService initialized with ${this.tools.length} tool(s).`,
     );
   }
@@ -53,33 +55,27 @@ export class AgentService {
       memoryKey: "history",
       inputKey: "input",
     });
-    // 2. Создание PromptTemplate с помощью ZeroShotAgent.createPrompt
-    // Мы передаем список инструментов, и createPrompt сам сгенерирует
-    // переменные {tools} и {tool_names}
-    // src/agent/agent.service.ts (изменяем templateString)
-
     const templateString = `You are a machine that strictly follows the output format. 
 You MUST NOT output any JSON, XML, or other structured data formats for the Final Answer.
-The Final Answer must be plain text only on question language.
+You MUST provide Final Answer as plain text and on language which used for question.
 
 You have access to the following tools: {tool_names}.
 
 If the Question asks for the current time or date, you MUST use the "current-time-getter" tool immediately.
 If the Question involves arithmetic or requires a calculation, you MUST use the "calculator" tool immediately.
-If the Question asks sbout customer's order, you MUST use the "get_customer_order" tool immediately.
+If the Question asks sbout customer's order, you MUST use the "get_customer_order" tool immediately without any modifications.
 If the Question can be answered using only your internal knowledge (e.g., general knowledge, identity, greetings), you MUST SKIP the Action/Observation cycle and proceed IMMEDIATELY to Final Answer.
 You MUST ONLY use actions from the list [{tool_names}]. DO NOT generate Action: None or Action: N/A.
 
 Use the following format:
 
 Question: the input question you must answer
-Thought: you should always think about what to do
 Action: the action to take, should be one of [{tool_names}]
-Action Input: ALWAYS provide some text here. If you have no input, just write a single dot "."
+Action Input: The specific input for the tool (e.g., the order ID, the mathematical expression, or "." only if absolutely no data is provided in the Question).
 Observation: the result of the action
-... 
-Thought: I have finished using the tools and I am ready to give the final answer.
-Final Answer: the final answer to the original input question. You MUST include all details provided by the tools (like status, dates, or IDs) without omitting them.DONOT change any tool's answer
+(After receiving an Observation, you MUST provide a Thought and then a Final Answer)
+Thought: I now have the information needed to answer the question.
+Final Answer: [your response here]
 
 Begin!
 
@@ -99,35 +95,27 @@ Question: {input}
       },
     });
 
-    // 3. Создание LLMChain
     const llmChain = new LLMChain({
       llm: this.llm,
       prompt: agentPrompt,
     });
 
-    // 4. Создание ZeroShotAgent
     const agent = new ZeroShotAgent({
       llmChain: llmChain,
-      // allowedTools: this.tools.map(tool => tool.name), // Только имена, если агент требует
-      allowedTools: this.tools.map((tool) => tool.name), // Передаем сами объекты инструментов
+      allowedTools: this.tools.map((tool) => tool.name),
     });
 
-    // 5. Создание AgentExecutor
     const executor = AgentExecutor.fromAgentAndTools({
       agent: agent,
       tools: this.tools,
-      memory: memory, // Передаем память для {chat_history}
+      memory: memory,
       verbose: true,
       handleParsingErrors: true,
-        // handleParsingErrors: (e) => {
-        //     return "Ой, я ошибся в формате. Мне нужно придерживаться формата Thought/Action/Action Input. Попробую еще раз.";
-        // },
-        // // 2. Ограничиваем количество итераций, чтобы не платить за бесконечные циклы
-        // maxIterations: 5,
+      maxIterations: 8,
     });
 
     try {
-      this.logger.log(`Running AgentExecutor for session ${sessionId}.`);
+      this.logger.info(`Running AgentExecutor for session ${sessionId}.`);
 
       const result = await executor.invoke({ input: message });
 

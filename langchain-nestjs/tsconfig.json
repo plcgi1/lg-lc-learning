@@ -20,6 +20,6 @@
     "noFallthroughCasesInSwitch": false,
     "esModuleInterop": true
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*","scripts/"],
   "exclude": ["node_modules", "dist"]
 }

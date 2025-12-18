@@ -1,12 +1,10 @@
-// src/mongo/schemas/conversation.schema.ts
-
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document } from "mongoose";
 
 export type ConversationDocument = Conversation & Document;
 
 // Схема для отдельного сообщения (вложенный документ)
-@Schema({ _id: false }) // Не создавать отдельный _id для вложенного документа
+@Schema({ _id: false })
 class Message {
   @Prop({ required: true })
   type: string; // Тип сообщения (human, ai, system)

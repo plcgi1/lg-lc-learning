@@ -1,13 +1,18 @@
-// src/tools/tools.module.ts
-
 import { Module } from "@nestjs/common";
 import { CurrentTimeTool } from "./current-time.tool";
+import {GetCustomerOrderTool} from "./get-customer-order.tool";
+import {CalculatorTool} from "./calculator.tool";
 
 @Module({
   providers: [
-    // Предоставляем класс-инструмент как провайдер
     CurrentTimeTool,
+      GetCustomerOrderTool,
+      CalculatorTool
   ],
-  exports: [CurrentTimeTool],
+  exports: [
+      CurrentTimeTool,
+      GetCustomerOrderTool,
+      CalculatorTool
+  ],
 })
 export class ToolsModule {}

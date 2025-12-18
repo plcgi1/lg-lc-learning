@@ -1,4 +1,3 @@
-// src/config/envs/default.ts
 import { AppConfig } from "../interfaces/config.interface";
 import * as dotenv from "dotenv";
 import * as pack from "../../../package.json";
@@ -36,7 +35,7 @@ export const defaultConfig: AppConfig = {
   },
 
   redis: {
-    url: process.env.REDIS_HOST,
+    url: process.env.REDIS_URL,
   },
 
   mongo: {

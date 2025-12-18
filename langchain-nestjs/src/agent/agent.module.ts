@@ -1,10 +1,8 @@
-// src/agent/agent.module.ts
-
 import { Module } from "@nestjs/common";
 import { AgentService } from "./agent.service";
-import { LlmsModule } from "../llm/llm.module"; // Нужен для ChatModel
-import { RedisModule } from "../redis/redis.module"; // Нужен для Redis Service
-import { ToolsModule } from "../tools/tools.module"; // Нужен для инструментов
+import { LlmsModule } from "../llm/llm.module";
+import { RedisModule } from "../redis/redis.module";
+import { ToolsModule } from "../tools/tools.module";
 
 @Module({
   imports: [LlmsModule, RedisModule, ToolsModule],

@@ -39,6 +39,7 @@ async function runBenchmark() {
       });
     } catch (e) {
       results.push({ model: modelName, time: "ERROR", output: "Не удалось загрузить модель" });
+      console.error(e);
     }
   }
 
@@ -47,7 +48,3 @@ async function runBenchmark() {
 }
 
 runBenchmark().catch(console.error);
-
-// TLfMdAQEY2iDWFsMdYeoVHxWAYbbYLghEM
-
-// TLfMdAQEY2iDWFsMdYeoVHxWAYbbYLghEM

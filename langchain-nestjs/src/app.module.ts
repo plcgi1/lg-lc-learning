@@ -26,13 +26,5 @@ const globalConfig = appConfig();
     RedisModule,
     ToolsModule,
   ],
-  // TODO надо ли
-  // providers: [
-  //   // Регистрируем глобальный Guard
-  //   {
-  //     provide: APP_GUARD,
-  //     useClass: ExternalAuthGuard,
-  //   },
-  // ],
 })
 export class AppModule {}

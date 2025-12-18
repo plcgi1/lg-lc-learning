@@ -12,7 +12,6 @@ const globalConfig = appConfig();
 
 @Module({
   imports: [
-    // 1. Настройка подключения к MongoDB
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async () => ({
@@ -21,12 +20,11 @@ const globalConfig = appConfig();
       inject: [ConfigService],
     }),
 
-    // 2. Регистрация схемы для использования в сервисах
     MongooseModule.forFeature([
       { name: Conversation.name, schema: ConversationSchema },
     ]),
   ],
   providers: [ConversationHistoryService],
-  exports: [ConversationHistoryService, MongooseModule], // Экспортируем сервис истории
+  exports: [ConversationHistoryService, MongooseModule],
 })
 export class MongoModule {}

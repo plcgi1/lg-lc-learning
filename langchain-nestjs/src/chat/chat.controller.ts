@@ -1,5 +1,3 @@
-// src/chat/chat.controller.ts
-
 import {
   Controller,
   Post,

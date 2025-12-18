@@ -5,10 +5,6 @@ import { Logger, LoggerErrorInterceptor } from "nestjs-pino";
 import { ConfigService } from "@nestjs/config";
 import { AppConfig } from "./config/interfaces/config.interface";
 
-// import config from "./config";
-//
-// const cfg = config();
-
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
 
@@ -22,26 +18,15 @@ async function bootstrap() {
     .setTitle("Nestjs LLM agent")
     .setDescription("Nestjs LLM agent")
     .setVersion(appConfig.version)
-    // TODO надо ли
-    // .addBearerAuth(
-    //   {
-    //     type: "http",
-    //     scheme: "bearer",
-    //     bearerFormat: "JWT",
-    //     name: "JWT",
-    //     description: "Enter JWT token",
-    //     in: "header",
-    //   },
-    //   "JWT-auth", // Имя схемы безопасности
-    // )
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup("", app, document);
 
-  app.useGlobalInterceptors(new LoggerErrorInterceptor());
   const logger = app.get(Logger);
 
+  app.useLogger(logger);
+  app.useGlobalInterceptors(new LoggerErrorInterceptor());
   const server = await app.listen(appConfig.port);
 
   server.setTimeout(600000);
