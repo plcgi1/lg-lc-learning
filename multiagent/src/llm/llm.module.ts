@@ -20,6 +20,7 @@ const globalConfig = appConfig();
                 return new ChatOllama({
                     model: globalConfig.ollama.model,
            baseUrl: globalConfig.ollama.baseUrl,
+                    format: "json",
            temperature: globalConfig.ollama.options.temperature,
                     cache: cache,
                 });

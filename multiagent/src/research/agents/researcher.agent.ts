@@ -46,13 +46,6 @@ export class ResearcherAgent {
     for (const q of queries["results"]) {
         const r = await this.tavilyService.search(q);
         results.push(r);
-      // console.log(`🔎 Поиск (${index + 1}/3): "${q}"`);
-      // const r = await this.tavilyService.search(q);
-      // console.log("RRRRRRRRRRRRR", r);
-      // console.log(
-      //   `📥 Получено данных для запроса ${index + 1}: ${r.length} символов`,
-      // );
-      // results.push(r);
       index++;
     }
     return {
