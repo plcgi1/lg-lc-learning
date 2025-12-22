@@ -7,7 +7,7 @@ import { PinoLogger, InjectPinoLogger } from "nestjs-pino";
 export class ReporterAgent {
   constructor(
     @Inject("LLM_MODEL") private readonly model: ChatOllama,
-    @InjectPinoLogger(ResearcherAgent.name)
+    @InjectPinoLogger(ReporterAgent.name)
     private readonly logger: PinoLogger,
   ) {}
 
