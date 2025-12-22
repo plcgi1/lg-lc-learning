@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { TavilySearch } from "@langchain/tavily";
-import { RedisService } from '../redis/redis.service';
-import { createHash } from 'crypto';
+import { RedisService } from "../redis/redis.service";
+import { createHash } from "crypto";
 
 @Injectable()
 export class TavilyService {
@@ -24,21 +24,28 @@ export class TavilyService {
    * Выполняет поиск по одной фразе
    */
   async search(query: string): Promise<string> {
-      const hash = createHash('md5').update(query.toLowerCase().trim()).digest('hex');
-      const cacheKey = `tavily:search:${hash}`;
+    const hash = createHash("md5")
+      .update(query.toLowerCase().trim())
+      .digest("hex");
+    const cacheKey = `tavily:search:${hash}`;
     try {
-        const cached = await this.redisService.client.get(cacheKey);
-        if (cached) {
-            console.log(`🎯 [TAVILY CACHE] Hit: "${query.slice(0, 30)}..."`);
-            const resultStrin = JSON.parse(cached)
-            return resultStrin;
-        }
+      const cached = await this.redisService.client.get(cacheKey);
+      if (cached) {
+        console.log(`🎯 [TAVILY CACHE] Hit: "${query.slice(0, 30)}..."`);
+        const resultStrin = JSON.parse(cached);
+        return resultStrin;
+      }
       // Инструмент возвращает строковое представление результатов
       const result = await this.tool.invoke({ query });
-        // 4. Сохраняем в Redis (например, на 3 дня)
-        const resultString = JSON.stringify(result)
-        await this.redisService.client.set(cacheKey, resultString, 'EX', 60 * 60 * 24 * 3);
-        return result;
+      // 4. Сохраняем в Redis (например, на 3 дня)
+      const resultString = JSON.stringify(result);
+      await this.redisService.client.set(
+        cacheKey,
+        resultString,
+        "EX",
+        60 * 60 * 24 * 3,
+      );
+      return result;
     } catch (error) {
       console.error(`Ошибка поиска Tavily для запроса "${query}":`, error);
       return ""; // Возвращаем пустую строку, чтобы не ломать Promise.all

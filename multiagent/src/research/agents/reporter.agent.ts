@@ -9,24 +9,38 @@ export class ReporterAgent {
   async execute(state: StateType): Promise<Partial<StateType>> {
     console.info("📝 Шаг: Reporter — формирование отчета...", state);
 
-      const context = state.research
-          .flatMap((r: any) => {
-              // Если r.results существует — берем его, иначе пробуем сам r как массив или объект
-              const items = r.results || (Array.isArray(r) ? r : [r]);
+    if (!state.research || state.research.length === 0) {
+      console.info("📝 Шаг: Reporter — research пустой", state);
+      return {
+        report: JSON.stringify({
+          summary: "Ошибка: данные не найдены.",
+          sections: [],
+          conclusion: "Поиск не дал результатов. Проверьте поисковые запросы.",
+        }),
+      };
+    }
 
-              return items.map((item: any) => {
+    const context = state.research
+      .flatMap((r: any) => {
+        // Если r.results существует — берем его, иначе пробуем сам r как массив или объект
+        const items = r.results || (Array.isArray(r) ? r : [r]);
 
-                  // Извлекаем контент, обращая внимание на структуру Tavily
-                  const text = item.content || (typeof item === 'string' ? item : JSON.stringify(item));
-                  const result =  `Источник: ${item.title || 'Без названия'}\nТекст: ${text}`;
-                  return result
-              });
-          })
-          .join('\n---\n')
-          .slice(0, 15000);
-    console.info('context', context)
-      const prompt = `
+        return items.map((item: any) => {
+          // Извлекаем контент, обращая внимание на структуру Tavily
+          const text =
+            item.content ||
+            (typeof item === "string" ? item : JSON.stringify(item));
+          const result = `Источник: ${item.title || "Без названия"}\nТекст: ${text}`;
+          return result;
+        });
+      })
+      .join("\n---\n")
+      .slice(0, 15000);
+
+    const prompt = `
       Ты — технический аналитик. Твоя задача: превратить массив данных в структурированные тезисы.
+КОНТЕКСТ ДЛЯ АНАЛИЗА:
+${context}
 
 ПРАВИЛА ОТВЕТА (JSON):
 1. Весь ответ должен быть СТРОГИМ JSON-объектом.
@@ -52,23 +66,12 @@ export class ReporterAgent {
 ОГРАНИЧЕНИЯ:
 - Максимум 3 раздела (sections).
 - Ровно 3 тезиса (points) в каждом разделе.
-      `
-   //  const prompt = `Ты — профессиональный технический писатель.
-   //  На основе собранных данных по теме "${state.task}", напиши подробный аналитический отчет.
-   //
-   //  ДАННЫЕ ИЗ СЕТИ:
-   //  ${context}
-   //
-   // ИНСТРУКЦИЯ:
-   //  1. Пиши на русском языке.
-   //  2. Используй Markdown: заголовки и списки.
-   //  3. Если данных недостаточно — напиши только то, что нашел.
-   //  4. НЕ ПИШИ вступление ("Конечно, вот ваш отчет"). Сразу начинай с заголовка.`;
+      `;
 
     const response = await this.model.invoke(prompt);
-      console.info(`response`, response);
-      const reportText = response.content.toString();
-      console.info(`✅ Отчет готов (${reportText.length} симв.)`, { reportText });
+
+    const reportText = response.content.toString();
+    console.info(`✅ Отчет готов (${reportText.length} симв.)`, { reportText });
     return {
       report: reportText,
     };

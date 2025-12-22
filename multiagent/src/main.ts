@@ -1,4 +1,5 @@
 import { NestFactory } from "@nestjs/core";
+import { ValidationPipe } from "@nestjs/common";
 import { AppModule } from "./app.module";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { Logger, LoggerErrorInterceptor } from "nestjs-pino";
@@ -9,7 +10,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
 
   app.setGlobalPrefix("api/v1");
-
+  app.useGlobalPipes(new ValidationPipe());
   const configService = app.get(ConfigService);
 
   const appConfig = configService.get<AppConfig>("app");

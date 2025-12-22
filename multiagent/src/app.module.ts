@@ -22,7 +22,7 @@ const globalConfig = appConfig();
     ResearchModule,
     MongoModule,
     ToolsModule,
-      RedisModule
+    RedisModule,
   ],
 })
 export class AppModule {}

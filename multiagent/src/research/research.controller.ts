@@ -8,7 +8,6 @@ export class ResearchController {
 
   @Post()
   async startResearch(@Body() body: CreateResearchDto) {
-    // На этом этапе мы просто запускаем первый узел графа
-    return this.researchService.runInitialResearch(body.query);
+    return this.researchService.runInitialResearch(body.query, body.threadId);
   }
 }
