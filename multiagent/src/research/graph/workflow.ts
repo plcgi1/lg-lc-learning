@@ -1,5 +1,8 @@
 import { StateGraph, START, END } from "@langchain/langgraph";
-import { StateType } from "./state"; // Ваш интерфейс
+import { StateType } from "./state";
+import { appConfig } from "../../config/configuration";
+
+const globalConfig = appConfig();
 
 export const createResearchGraph = (
   researcher: any,
@@ -30,9 +33,10 @@ export const createResearchGraph = (
   workflow.addConditionalEdges(
     "critic",
     (state) => {
-      // Логика выхода на основе вашей схемы
-      // TODO добавить из конфига
-      if (state.score >= 8 || state.iterations >= 3) {
+      if (
+        state.score >= globalConfig.langGraph.workflow.maxScore ||
+        state.iterations >= globalConfig.langGraph.workflow.maxScore
+      ) {
         return "end";
       }
       console.log(

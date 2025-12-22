@@ -18,6 +18,16 @@ export interface RedisConfig {
 
 export interface mongoConfig {
   uri: string;
+  dbName: string;
+  checkpointCollectionName: string;
+  checkpointWritesCollectionName: string;
+}
+
+export interface LanggraphConfig {
+  workflow: {
+    maxScore: number;
+    maxIterations: number;
+  };
 }
 
 export interface AppConfig {
@@ -29,4 +39,5 @@ export interface AppConfig {
   ollama: OllamaConfig;
   redis: RedisConfig;
   mongo: mongoConfig;
+  langGraph: LanggraphConfig;
 }

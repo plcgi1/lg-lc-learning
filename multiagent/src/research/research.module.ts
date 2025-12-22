@@ -5,7 +5,6 @@ import { ResearcherAgent } from "./agents/researcher.agent";
 import { TavilyService } from "../tools/tavily.service";
 import { LlmModule } from "../llm/llm.module";
 import { ReporterAgent } from "./agents/reporter.agent";
-import { CacheModule } from "@nestjs/cache-manager";
 import { CriticAgent } from "./agents/critic.agent";
 
 @Module({

@@ -1,6 +1,9 @@
 import { Module, Global } from "@nestjs/common";
 import { MongoClient } from "mongodb";
 import { MongoDBSaver } from "@langchain/langgraph-checkpoint-mongodb";
+import { appConfig } from "../config/configuration";
+
+const globalConfig = appConfig();
 
 @Global() // Делаем модуль глобальным, чтобы не импортировать везде
 @Module({
@@ -8,9 +11,7 @@ import { MongoDBSaver } from "@langchain/langgraph-checkpoint-mongodb";
     {
       provide: "MONGO_CLIENT",
       useFactory: async () => {
-        const client = new MongoClient(
-          process.env.MONGO_URI || "mongodb://localhost:27017",
-        );
+        const client = new MongoClient(globalConfig.mongo.uri);
         await client.connect();
         return client;
       },
@@ -20,7 +21,7 @@ import { MongoDBSaver } from "@langchain/langgraph-checkpoint-mongodb";
       useFactory: (client: MongoClient) => {
         return new MongoDBSaver({
           client,
-          dbName: "research_ai",
+          dbName: globalConfig.mongo.dbName,
           checkpointCollectionName: "checkpoints",
           checkpointWritesCollectionName: "checkpoint_writes",
         });

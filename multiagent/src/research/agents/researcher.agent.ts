@@ -1,13 +1,9 @@
 import { Injectable, Inject } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
 import { ChatOllama } from "@langchain/ollama";
 import { JsonOutputParser } from "@langchain/core/output_parsers";
 import { TavilyService } from "../../tools/tavily.service";
 import { PinoLogger, InjectPinoLogger } from "nestjs-pino";
-import { AppConfig } from "../../config/interfaces/config.interface";
-import { CACHE_MANAGER } from "@nestjs/cache-manager";
 import { SystemMessage, HumanMessage } from "@langchain/core/messages";
-import { createHash } from "crypto";
 import { StateType } from "../graph/state";
 
 @Injectable()
@@ -20,10 +16,11 @@ export class ResearcherAgent {
   ) {}
 
   async execute(state: StateType) {
-    console.info("📝 Шаг: ResearcherAgent — получение данных...", state);
+    this.logger.info("📝 Шаг: ResearcherAgent — получение данных...");
 
     const sysPrompt = new SystemMessage(`Ты — поисковый ассистент. 
 Твоя единственная цель: генерировать короткие поисковые запросы для Google.
+ОТВЕТ ОБЯЗАТЕЛЬНО НА русском языке.
 ЗАПРЕЩЕНО: давать ответы на вопросы, писать пояснения, использовать полные предложения.
 ФОРМАТ ОТВЕТА: СТРОГО JSON {"results": ["запрос1", "запрос2", "запрос3"]}
 ПРИМЕР: {"results": ["физиология дыхания китов", "емкость легких человека", "газообмен млекопитающих"]}
@@ -41,10 +38,8 @@ ${state.feedback ? `Учти критику: ${state.feedback}` : ""}
 
     this.logger.info({ queries }, "🔍 Сгенерированные запросы:");
 
-    // TODO 2. Параллельный поиск
-    // TODO const results = await Promise.all(queriesChunks);
     const research = [];
-    let index = 0;
+
     const normalizedQueries = queries["results"]
       .flat(2) // Разворачиваем вложенность, если она появилась
       .map((q) => String(q).trim()) // Превращаем всё в строки
@@ -53,7 +48,6 @@ ${state.feedback ? `Учти критику: ${state.feedback}` : ""}
     for (const q of normalizedQueries) {
       const r = await this.tavilyService.search(q);
       research.push(r);
-      index++;
     }
 
     return {

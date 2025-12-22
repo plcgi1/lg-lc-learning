@@ -30,7 +30,7 @@ export const defaultConfig: AppConfig = {
     baseUrl: process.env.OLLAMA_BASE_URL || "http://localhost:11434",
     model: process.env.OLLAMA_MODEL || "llama2",
     options: {
-      temperature: 0.7,
+      temperature: 0.1,
     },
   },
 
@@ -40,5 +40,15 @@ export const defaultConfig: AppConfig = {
 
   mongo: {
     uri: process.env.MONGO_URI,
+    dbName: process.env.MONGO_DBNAME,
+    checkpointCollectionName: "checkpoints",
+    checkpointWritesCollectionName: "checkpoint_writes",
+  },
+
+  langGraph: {
+    workflow: {
+      maxIterations: 3,
+      maxScore: 8,
+    },
   },
 };

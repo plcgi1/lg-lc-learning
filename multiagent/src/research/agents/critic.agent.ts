@@ -2,17 +2,23 @@ import { Injectable, Inject } from "@nestjs/common";
 import { ChatOllama } from "@langchain/ollama";
 import { JsonOutputParser } from "@langchain/core/output_parsers";
 import { StateType } from "../graph/state";
+import { PinoLogger, InjectPinoLogger } from "nestjs-pino";
 
 @Injectable()
 export class CriticAgent {
-  constructor(@Inject("LLM_MODEL") private readonly model: ChatOllama) {}
+  constructor(
+    @Inject("LLM_MODEL") private readonly model: ChatOllama,
+    @InjectPinoLogger(ResearcherAgent.name)
+    private readonly logger: PinoLogger,
+  ) {}
 
   async execute(state: StateType): Promise<Partial<StateType>> {
-    console.info("📝 Шаг: CriticAgent — критика...", state);
+    this.logger.info("📝 Шаг: CriticAgent — критика...");
 
     const parser = new JsonOutputParser<any>();
 
     const sysPrompt = `Ты — строгий научный критик. Твоя задача — проверить отчет на точность и полноту.
+    ОТВЕТ ОБЯЗАТЕЛЬНО НА русском языке.
     ПРАВИЛА ОЦЕНКИ:
     1. Оценивай по шкале от 1 до 10.
     2. Если score < 8, обязательно укажи, что нужно исправить.
@@ -47,7 +53,7 @@ export class CriticAgent {
         iterations: (state.iterations || 0) + 1,
       };
     } catch (error) {
-      console.error("Critic parsing error, returning fallback", error);
+      this.logger.error({ error }, "Critic parsing error, returning fallback");
       // Возвращаем плоский объект, а не вложенный
       return {
         score: 1,

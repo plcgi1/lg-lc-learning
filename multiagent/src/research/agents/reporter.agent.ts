@@ -1,16 +1,21 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { ChatOllama } from "@langchain/ollama";
 import { StateType } from "../graph/state";
+import { PinoLogger, InjectPinoLogger } from "nestjs-pino";
 
 @Injectable()
 export class ReporterAgent {
-  constructor(@Inject("LLM_MODEL") private readonly model: ChatOllama) {}
+  constructor(
+    @Inject("LLM_MODEL") private readonly model: ChatOllama,
+    @InjectPinoLogger(ResearcherAgent.name)
+    private readonly logger: PinoLogger,
+  ) {}
 
   async execute(state: StateType): Promise<Partial<StateType>> {
-    console.info("📝 Шаг: Reporter — формирование отчета...", state);
+    this.logger.info("📝 Шаг: Reporter — формирование отчета...");
 
     if (!state.research || state.research.length === 0) {
-      console.info("📝 Шаг: Reporter — research пустой", state);
+      this.logger.info("📝 Шаг: Reporter — research пустой");
       return {
         report: JSON.stringify({
           summary: "Ошибка: данные не найдены.",
@@ -39,6 +44,7 @@ export class ReporterAgent {
 
     const prompt = `
       Ты — технический аналитик. Твоя задача: превратить массив данных в структурированные тезисы.
+      ОТВЕТ ОБЯЗАТЕЛЬНО НА русском языке.
 КОНТЕКСТ ДЛЯ АНАЛИЗА:
 ${context}
 
@@ -71,7 +77,7 @@ ${context}
     const response = await this.model.invoke(prompt);
 
     const reportText = response.content.toString();
-    console.info(`✅ Отчет готов (${reportText.length} симв.)`, { reportText });
+    this.logger.info(`✅ Отчет готов (${reportText.length} симв.)`);
     return {
       report: reportText,
     };

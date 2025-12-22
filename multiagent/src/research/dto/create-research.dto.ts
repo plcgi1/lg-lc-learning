@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsUUID, IsNotEmpty, IsString } from "class-validator";
+import { IsUUID, IsNotEmpty } from "class-validator";
 
 export class CreateResearchDto {
   @ApiProperty({
@@ -10,7 +10,7 @@ export class CreateResearchDto {
   query: string;
 
   @ApiProperty({
-    example: "550e8400-e29b-41d4-a716-446655440000",
+    example: "550e8400-e29b-41d4-a716-446655440001",
     description:
       "Уникальный идентификатор сессии (UUID v4) для сохранения истории в MongoDB",
     format: "uuid", // Указывает Swagger на формат строки
